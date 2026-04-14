@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.List;
+
 @Slf4j
 @RestControllerAdvice
 public class APIExceptionHandler {
@@ -66,15 +68,15 @@ public class APIExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public APIError handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.error(ex.getMessage(), ex);
-        var details = ex.getBindingResult()
+        List<String> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .toString();
+                .toList();
         return new APIError(
                 HttpStatus.BAD_REQUEST.value(),
                 "ValidationError",
-                "Validation failed: " + String.join(", ", details)
+                "Validation failed: [" + String.join(", ", details) + "]"
         );
     }
 }
