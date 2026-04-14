@@ -64,13 +64,17 @@ public class APIExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ApiResponse(content = @Content(mediaType = "application/json"))
     public APIError handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         log.error(ex.getMessage(), ex);
+        var details = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .toString();
         return new APIError(
                 HttpStatus.BAD_REQUEST.value(),
-                ex.getClass().getSimpleName(),
-                ex.getMessage()
+                "ValidationError",
+                "Validation failed: " + String.join(", ", details)
         );
     }
 }
